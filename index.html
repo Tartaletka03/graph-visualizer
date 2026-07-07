@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Визуализатор алгоритмов на графах</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Боковая панель управления -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>Визуализатор алгоритмов на графах</h1>
+        <p class="subtitle">BFS · DFS · Дейкстра · Прим · Краскал</p>
+      </div>
+
+      <!-- Выбор алгоритма -->
+      <section class="section">
+        <h2>Алгоритм</h2>
+        <div class="algo-buttons">
+          <button class="algo-btn active" data-algo="bfs">BFS</button>
+          <button class="algo-btn" data-algo="dfs">DFS</button>
+          <button class="algo-btn" data-algo="dijkstra">Дейкстра</button>
+          <button class="algo-btn" data-algo="prim">Прим (MST)</button>
+          <button class="algo-btn" data-algo="kruskal">Краскал (MST)</button>
+        </div>
+      </section>
+
+      <!-- Стартовая вершина -->
+      <section class="section">
+        <h2>Стартовая вершина</h2>
+        <select id="start-vertex" class="select"></select>
+      </section>
+
+      <!-- Управление выполнением -->
+      <section class="section">
+        <h2>Управление</h2>
+        <button id="btn-run" class="btn btn-primary">▶ Запустить</button>
+        <div class="btn-row">
+          <button id="btn-prev" class="btn btn-secondary">◀ Шаг назад</button>
+          <button id="btn-next" class="btn btn-secondary">Шаг вперёд ▶</button>
+        </div>
+        <button id="btn-auto" class="btn btn-info">▶ Авто</button>
+        <button id="btn-reset" class="btn btn-warning">⟲ Сбросить</button>
+
+        <div class="speed-control">
+          <label for="speed-slider">Задержка: <span id="speed-value">700 мс</span></label>
+          <input type="range" id="speed-slider" min="100" max="2000" step="100" value="700" />
+        </div>
+      </section>
+
+      <!-- Редактор графа -->
+      <section class="section">
+        <h2>Редактор графа</h2>
+        <button id="btn-sample" class="btn btn-success">Загрузить пример</button>
+        <button id="btn-clear" class="btn btn-danger">Очистить всё</button>
+        <p class="help-text">
+          Клик по пустому месту — добавить вершину.<br />
+          Клик по двум вершинам — создать ребро.<br />
+          Перетаскивайте вершины мышью.<br />
+          Правый клик — удалить элемент.
+        </p>
+      </section>
+
+      <!-- Информационная панель -->
+      <section class="section info-panel">
+        <h2>Информация</h2>
+        <div class="info-step-line">
+          <span class="info-key">Шаг:</span>
+          <span id="info-step">—</span>
+        </div>
+        <div id="info-desc" class="info-desc">Выберите алгоритм и нажмите «Запустить»</div>
+        <div id="info-order" class="info-block"></div>
+        <div id="info-distances" class="info-block"></div>
+        <div id="info-mst" class="info-block"></div>
+      </section>
+    </aside>
+
+    <!-- Рабочая область с холстом -->
+    <main class="workspace">
+      <svg id="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="hint" class="hint"></div>
+
+      <!-- Модальное окно ввода веса ребра -->
+      <div id="weight-modal" class="modal hidden">
+        <div class="modal-content">
+          <h3>Вес ребра</h3>
+          <input type="number" id="weight-input" min="0" value="1" />
+          <div class="modal-actions">
+            <button id="weight-ok" class="btn btn-primary">OK</button>
+            <button id="weight-cancel" class="btn btn-secondary">Отмена</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Контекстное меню -->
+      <div id="context-menu" class="context-menu hidden"></div>
+    </main>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

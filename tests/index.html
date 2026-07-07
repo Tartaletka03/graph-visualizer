@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Тесты — Визуализатор алгоритмов на графах</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+      padding: 24px;
+    }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .meta { color: #6b7280; font-size: 13px; margin-bottom: 20px; }
+    #output {
+      background: #fff;
+      border: 1px solid #e2e6ee;
+      border-radius: 8px;
+      padding: 20px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      max-width: 900px;
+    }
+    .suite { color: #2563eb; font-weight: 700; margin-top: 12px; }
+    .pass { color: #16a34a; }
+    .fail { color: #dc2626; }
+    .summary { margin-top: 16px; font-weight: 700; font-size: 15px; }
+    .summary.all-pass { color: #16a34a; }
+    .summary.has-fail { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <h1>Автоматизированные тесты визуализатора</h1>
+  <p class="meta">Модули: модель графа, приоритетная очередь, DSU, BFS, DFS, Дейкстра, Прим, Краскал</p>
+  <div id="output"></div>
+
+  <script type="module">
+    import { runAll } from './runner.mjs';
+    import './graph.test.js';
+    import './structures.test.js';
+    import './bfs.test.js';
+    import './dfs.test.js';
+    import './dijkstra.test.js';
+    import './prim.test.js';
+    import './kruskal.test.js';
+
+    const output = document.getElementById('output');
+
+    function append(text, cls) {
+      const div = document.createElement('div');
+      div.className = cls || '';
+      div.textContent = text;
+      output.appendChild(div);
+    }
+
+    const result = await runAll((type, text) => {
+      if (type === 'suite') append(text, 'suite');
+      else if (type === 'pass') append(text, 'pass');
+      else if (type === 'fail') append(text, 'fail');
+      else append(text, 'summary');
+    });
+
+    const cls = result.failed === 0 ? 'summary all-pass' : 'summary has-fail';
+    append(
+      result.failed === 0
+        ? `\n✓ ВСЕ ТЕСТЫ ПРОЙДЕНЫ (${result.passed} тестов)`
+        : `\n✗ ТЕСТЫ НЕ ПРОЙДЕНЫ: ${result.failed} ошибок из ${result.passed + result.failed}`,
+      cls
+    );
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "graph-visualizer",
+  "version": "1.0.0",
+  "description": "Визуализатор алгоритмов на графах: BFS, DFS, Дейкстра, Прим, Краскал",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/run-all.mjs"
+  },
+  "license": "MIT"
+}
