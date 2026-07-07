@@ -51,6 +51,7 @@ export class UIController {
     this.btnReset = $('btn-reset');
     this.btnSample = $('btn-sample');
     this.btnClear = $('btn-clear');
+    this.btnFit = $('btn-fit');
     this.speedSlider = $('speed-slider');
     this.speedValue = $('speed-value');
     this.infoStep = $('info-step');
@@ -80,6 +81,7 @@ export class UIController {
     this.btnReset.addEventListener('click', () => this.resetVisualization());
     this.btnSample.addEventListener('click', () => this.loadSample());
     this.btnClear.addEventListener('click', () => this.clearAll());
+    this.btnFit.addEventListener('click', () => this.fitToScreen());
 
     // Слайдер скорости.
     this.speedSlider.addEventListener('input', () => {
@@ -95,6 +97,27 @@ export class UIController {
     this.canvas.addEventListener('mousemove', (e) => this._onCanvasMove(e));
     this.canvas.addEventListener('mouseup', (e) => this._onCanvasUp(e));
     this.canvas.addEventListener('contextmenu', (e) => this._onContextMenu(e));
+
+    // Pan/zoom: колесо мыши (зум), средняя кнопка или пробел (pan).
+    this.spaceDown = false;
+    this.panning = false;
+    this.panStart = null;
+    this.canvas.addEventListener('wheel', (e) => this._onWheel(e), { passive: false });
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !this._isInputFocused(e)) {
+        this.spaceDown = true; this.canvas.style.cursor = 'grab'; e.preventDefault();
+      }
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') { this.spaceDown = false; this.canvas.style.cursor = 'crosshair'; }
+    });
+
+    // Touch для мобильных: одно касание — pan (если не попало в вершину),
+    // два касания — pinch-zoom.
+    this._touchState = null;
+    this.canvas.addEventListener('touchstart', (e) => this._onTouchStart(e), { passive: false });
+    this.canvas.addEventListener('touchmove', (e) => this._onTouchMove(e), { passive: false });
+    this.canvas.addEventListener('touchend', (e) => this._onTouchEnd(e), { passive: false });
 
     // Модальное окно ввода веса.
     this.weightOk.addEventListener('click', () => this._confirmWeight());
@@ -129,9 +152,9 @@ export class UIController {
 
   // ---------- Редактор графа ----------
 
+  /** Координаты курсора в системе холста (с учётом pan/zoom). */
   _getMousePos(e) {
-    const rect = this.canvas.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    return this.visualizer.screenToWorld(e.clientX, e.clientY);
   }
 
   _vertexAt(x, y) {
@@ -144,8 +167,28 @@ export class UIController {
     return null;
   }
 
+  _isInputFocused(e) {
+    const t = e.target.tagName;
+    return t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT';
+  }
+
+  /** Зум колесом мыши к точке курсора. */
+  _onWheel(e) {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.1 : 0.9;
+    this.visualizer.zoomAt(e.clientX, e.clientY, factor);
+  }
+
   _onCanvasDown(e) {
-    if (e.button !== 0) return; // только левая кнопка
+    // Средняя кнопка или пробел — pan холста; левая без пробела — редактор.
+    if (e.button === 1 || (e.button === 0 && this.spaceDown)) {
+      this.panning = true;
+      this.panStart = { x: e.clientX, y: e.clientY, tx: this.visualizer.tx, ty: this.visualizer.ty };
+      this.canvas.style.cursor = 'grabbing';
+      e.preventDefault();
+      return;
+    }
+    if (e.button !== 0) return;
     const { x, y } = this._getMousePos(e);
     const v = this._vertexAt(x, y);
     this.dragMoved = false;
@@ -157,6 +200,14 @@ export class UIController {
   }
 
   _onCanvasMove(e) {
+    if (this.panning) {
+      const dx = e.clientX - this.panStart.x;
+      const dy = e.clientY - this.panStart.y;
+      this.visualizer.tx = this.panStart.tx + dx;
+      this.visualizer.ty = this.panStart.ty + dy;
+      this.visualizer.applyViewportTransform();
+      return;
+    }
     if (this.dragging === null) return;
     const { x, y } = this._getMousePos(e);
     const v = this.graph.getVertex(this.dragging);
@@ -168,6 +219,11 @@ export class UIController {
   }
 
   _onCanvasUp(e) {
+    if (this.panning) {
+      this.panning = false;
+      this.canvas.style.cursor = this.spaceDown ? 'grab' : 'crosshair';
+      return;
+    }
     if (e.button !== 0) return;
     const { x, y } = this._getMousePos(e);
     const v = this._vertexAt(x, y);
@@ -299,6 +355,96 @@ export class UIController {
 
   _showHint(text) {
     if (this.hint) this.hint.textContent = text;
+  }
+
+  // ---------- Touch-управление (pan/zoom для мобильных) ----------
+
+  _onTouchStart(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      const world = this.visualizer.screenToWorld(t.clientX, t.clientY);
+      const v = this._vertexAt(world.x, world.y);
+      if (v) {
+        // Начинаем перетаскивание вершины.
+        this._touchState = {
+          mode: 'drag-vertex',
+          vertexId: v.id,
+          offset: { dx: v.x - world.x, dy: v.y - world.y },
+          startX: t.clientX,
+          startY: t.clientY,
+          moved: false,
+        };
+      } else {
+        // Pan холста.
+        this._touchState = {
+          mode: 'pan',
+          startX: t.clientX,
+          startY: t.clientY,
+          tx: this.visualizer.tx,
+          ty: this.visualizer.ty,
+        };
+      }
+    } else if (e.touches.length === 2) {
+      // Pinch-zoom.
+      const [a, b] = [e.touches[0], e.touches[1]];
+      const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      const cx = (a.clientX + b.clientX) / 2;
+      const cy = (a.clientY + b.clientY) / 2;
+      this._touchState = {
+        mode: 'pinch',
+        startDist: dist,
+        startScale: this.visualizer.scale,
+        cx, cy,
+      };
+    }
+  }
+
+  _onTouchMove(e) {
+    e.preventDefault();
+    if (!this._touchState) return;
+    const st = this._touchState;
+
+    if (st.mode === 'drag-vertex' && e.touches.length === 1) {
+      const t = e.touches[0];
+      const world = this.visualizer.screenToWorld(t.clientX, t.clientY);
+      const v = this.graph.getVertex(st.vertexId);
+      if (v) {
+        v.x = world.x + st.offset.dx;
+        v.y = world.y + st.offset.dy;
+        st.moved = Math.hypot(t.clientX - st.startX, t.clientY - st.startY) > 8;
+        this.visualizer.updateVertexPosition(this.graph, v.id);
+      }
+    } else if (st.mode === 'pan' && e.touches.length === 1) {
+      const t = e.touches[0];
+      this.visualizer.tx = st.tx + (t.clientX - st.startX);
+      this.visualizer.ty = st.ty + (t.clientY - st.startY);
+      this.visualizer.applyViewportTransform();
+    } else if (st.mode === 'pinch' && e.touches.length === 2) {
+      const [a, b] = [e.touches[0], e.touches[1]];
+      const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      const factor = dist / st.startDist;
+      const newScale = Math.max(0.3, Math.min(3, st.startScale * factor));
+      // Зум к центру между пальцами.
+      const rect = this.canvas.getBoundingClientRect();
+      const sx = st.cx - rect.left;
+      const sy = st.cy - rect.top;
+      this.visualizer.tx = sx - (sx - this.visualizer.tx) * (newScale / this.visualizer.scale);
+      this.visualizer.ty = sy - (sy - this.visualizer.ty) * (newScale / this.visualizer.scale);
+      this.visualizer.scale = newScale;
+      this.visualizer.applyViewportTransform();
+    }
+  }
+
+  _onTouchEnd(e) {
+    if (!this._touchState) return;
+    const st = this._touchState;
+    // Если перетаскивали вершину, но не сдвинули — это клик (создание ребра).
+    if (st.mode === 'drag-vertex' && !st.moved) {
+      const v = this.graph.getVertex(st.vertexId);
+      if (v) this._handleVertexClick(v);
+    }
+    this._touchState = null;
   }
 
   // ---------- Управление алгоритмом ----------
@@ -465,6 +611,32 @@ export class UIController {
     this._renderVertexOptions();
     this.resetVisualization();
     this._showHint('Граф очищен');
+  }
+
+  /** Масштабирует граф так, чтобы он весь поместился в видимую область. */
+  fitToScreen() {
+    const vertices = this.graph.getVertices();
+    if (vertices.length === 0) {
+      this.visualizer.resetView();
+      this._showHint('Холст пуст');
+      return;
+    }
+    const xs = vertices.map((v) => v.x);
+    const ys = vertices.map((v) => v.y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const padding = 60;
+    const rect = this.canvas.getBoundingClientRect();
+    const w = maxX - minX + padding * 2;
+    const h = maxY - minY + padding * 2;
+    const scale = Math.min(rect.width / w, rect.height / h, 2);
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    this.visualizer.scale = Math.max(0.3, scale);
+    this.visualizer.tx = rect.width / 2 - cx * this.visualizer.scale;
+    this.visualizer.ty = rect.height / 2 - cy * this.visualizer.scale;
+    this.visualizer.applyViewportTransform();
+    this._showHint('Вид подогнан под граф');
   }
 }
 

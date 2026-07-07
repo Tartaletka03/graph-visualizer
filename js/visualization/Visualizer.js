@@ -28,6 +28,10 @@ export class Visualizer {
   constructor(svg) {
     this.svg = svg;
     this.svgNS = 'http://www.w3.org/2000/svg';
+    // Viewport: корневой <g>, к которому применяется translate + scale (pan/zoom).
+    this.viewport = document.createElementNS(this.svgNS, 'g');
+    this.viewport.setAttribute('id', 'viewport');
+    this.svg.appendChild(this.viewport);
     // Слои для корректного z-order: рёбра -> подписи весов -> вершины.
     this.edgeLayer = this._group('edge-layer');
     this.edgeLabelLayer = this._group('edge-label-layer');
@@ -36,13 +40,59 @@ export class Visualizer {
     this.vertexEls = new Map();
     /** @type {Map<number,{line:SVGLineElement,label:SVGTextElement}>} */
     this.edgeEls = new Map();
+
+    // Трансформация viewport: pan (tx, ty) и zoom (scale).
+    this.tx = 0; this.ty = 0; this.scale = 1;
   }
 
   _group(id) {
     const g = document.createElementNS(this.svgNS, 'g');
     g.setAttribute('id', id);
-    this.svg.appendChild(g);
+    this.viewport.appendChild(g);
     return g;
+  }
+
+  /** Применяет текущую трансформацию pan/zoom к viewport. */
+  applyViewportTransform() {
+    this.viewport.setAttribute('transform',
+      `translate(${this.tx}, ${this.ty}) scale(${this.scale})`);
+  }
+
+  /** Переводит экранные координаты в координаты холста (с учётом pan/zoom). */
+  screenToWorld(clientX, clientY) {
+    const rect = this.svg.getBoundingClientRect();
+    const sx = clientX - rect.left;
+    const sy = clientY - rect.top;
+    return {
+      x: (sx - this.tx) / this.scale,
+      y: (sy - this.ty) / this.scale,
+    };
+  }
+
+  /** Зум к точке курсора: сохраняет позицию под курсором. */
+  zoomAt(clientX, clientY, factor) {
+    const rect = this.svg.getBoundingClientRect();
+    const sx = clientX - rect.left;
+    const sy = clientY - rect.top;
+    const newScale = Math.max(0.3, Math.min(3, this.scale * factor));
+    // Корректируем сдвиг, чтобы точка под курсором осталась на месте.
+    this.tx = sx - (sx - this.tx) * (newScale / this.scale);
+    this.ty = sy - (sy - this.ty) * (newScale / this.scale);
+    this.scale = newScale;
+    this.applyViewportTransform();
+  }
+
+  /** Сдвигает viewport на (dx, dy) в экранных координатах. */
+  panBy(dx, dy) {
+    this.tx += dx;
+    this.ty += dy;
+    this.applyViewportTransform();
+  }
+
+  /** Сброс pan/zoom к значениям по умолчанию. */
+  resetView() {
+    this.tx = 0; this.ty = 0; this.scale = 1;
+    this.applyViewportTransform();
   }
 
   /** Полная перерисовка графа по модели. */
