@@ -27,7 +27,7 @@ describe('Алгоритм DFS', () => {
   it('использует стек, а не очередь', () => {
     const g = buildCanonicalGraph();
     const steps = dfs(g, idByLabel(g, 'A'));
-    // В шагах DFS поле stack должно быть непустым, queue — пустым.
+    // В шагах DFS поле stack должно быть непустым, queue - пустым.
     const hasStack = steps.some((s) => s.stack.length > 0);
     expect(hasStack).toBeTruthy();
     const noQueue = steps.every((s) => s.queue.length === 0);

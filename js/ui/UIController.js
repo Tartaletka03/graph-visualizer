@@ -112,8 +112,8 @@ export class UIController {
       if (e.code === 'Space') { this.spaceDown = false; this.canvas.style.cursor = 'crosshair'; }
     });
 
-    // Touch для мобильных: одно касание — pan (если не попало в вершину),
-    // два касания — pinch-zoom.
+    // Touch для мобильных: одно касание - pan (если не попало в вершину),
+    // два касания - pinch-zoom.
     this._touchState = null;
     this.canvas.addEventListener('touchstart', (e) => this._onTouchStart(e), { passive: false });
     this.canvas.addEventListener('touchmove', (e) => this._onTouchMove(e), { passive: false });
@@ -180,7 +180,7 @@ export class UIController {
   }
 
   _onCanvasDown(e) {
-    // Средняя кнопка или пробел — pan холста; левая без пробела — редактор.
+    // Средняя кнопка или пробел - pan холста; левая без пробела - редактор.
     if (e.button === 1 || (e.button === 0 && this.spaceDown)) {
       this.panning = true;
       this.panStart = { x: e.clientX, y: e.clientY, tx: this.visualizer.tx, ty: this.visualizer.ty };
@@ -229,10 +229,10 @@ export class UIController {
     const v = this._vertexAt(x, y);
 
     if (this.dragging !== null && !this.dragMoved) {
-      // Клик по вершине без перетаскивания — создание ребра.
+      // Клик по вершине без перетаскивания - создание ребра.
       this._handleVertexClick(v);
     } else if (this.dragging === null && !v) {
-      // Клик по пустому месту — добавление вершины.
+      // Клик по пустому месту - добавление вершины.
       this._addVertex(x, y);
     }
 
@@ -258,7 +258,7 @@ export class UIController {
       this.visualizer.setVertexState(v.id, 'current');
       this._openWeightModal();
     } else {
-      // Клик по той же вершине — отмена.
+      // Клик по той же вершине - отмена.
       this.visualizer.setVertexState(this.connectFrom, 'default');
       this.connectFrom = null;
     }
@@ -439,7 +439,7 @@ export class UIController {
   _onTouchEnd(e) {
     if (!this._touchState) return;
     const st = this._touchState;
-    // Если перетаскивали вершину, но не сдвинули — это клик (создание ребра).
+    // Если перетаскивали вершину, но не сдвинули - это клик (создание ребра).
     if (st.mode === 'drag-vertex' && !st.moved) {
       const v = this.graph.getVertex(st.vertexId);
       if (v) this._handleVertexClick(v);
@@ -514,7 +514,7 @@ export class UIController {
     this.steps = [];
     this.currentStep = -1;
     this.visualizer.resetStates();
-    this.infoStep.textContent = '—';
+    this.infoStep.textContent = '-';
     this.infoDesc.textContent = 'Выберите алгоритм и нажмите «Запустить»';
     this.infoOrder.innerHTML = '';
     this.infoDistances.innerHTML = '';
@@ -574,8 +574,8 @@ export class UIController {
 
   _renderMstInfo(step) {
     const count = step.mstEdges.length;
-    return `<span class="info-label">Остовное дерево:</span> рёбер — ${count},
-      суммарный вес — <strong>${step.totalWeight}</strong>`;
+    return `<span class="info-label">Остовное дерево:</span> рёбер - ${count},
+      суммарный вес - <strong>${step.totalWeight}</strong>`;
   }
 
   // ---------- Пример графа и очистка ----------

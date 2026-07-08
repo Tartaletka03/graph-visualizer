@@ -7,7 +7,7 @@
  * пропускаются при извлечении, что позволяет не реализовывать сложную
  * операцию decrease-key.
  *
- * Сложность: push — O(log n), pop — O(log n).
+ * Сложность: push - O(log n), pop - O(log n).
  */
 
 export class PriorityQueue {

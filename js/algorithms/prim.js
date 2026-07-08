@@ -1,5 +1,5 @@
 /**
- * Алгоритм Прима — построение минимального остовного дерева (MST).
+ * Алгоритм Прима - построение минимального остовного дерева (MST).
  *
  * Начинает со стартовой вершины и на каждом шаге добавляет ребро
  * минимального веса, соединяющее уже построенное дерево с вершиной,
@@ -42,10 +42,10 @@ export function prim(graph, startId) {
     const [w, edgeId, to, from] = pq.pop();
 
     if (inTree.has(to)) {
-      // Ребро ведёт в уже включённую вершину — пропускаем.
+      // Ребро ведёт в уже включённую вершину - пропускаем.
       steps.push({
         type: 'skip',
-        desc: `Ребро ${graph.getVertex(from).label}–${graph.getVertex(to).label} (${w}) ведёт в дерево — пропускаем`,
+        desc: `Ребро ${graph.getVertex(from).label}-${graph.getVertex(to).label} (${w}) ведёт в дерево - пропускаем`,
         current: from,
         inTree: [...inTree],
         mstEdges: [...mstEdges],
@@ -69,7 +69,7 @@ export function prim(graph, startId) {
 
     steps.push({
       type: 'add',
-      desc: `Добавляем ребро ${graph.getVertex(from).label}–${graph.getVertex(to).label} (вес ${w}); суммарный вес = ${totalWeight}`,
+      desc: `Добавляем ребро ${graph.getVertex(from).label}-${graph.getVertex(to).label} (вес ${w}); суммарный вес = ${totalWeight}`,
       current: to,
       inTree: [...inTree],
       mstEdges: [...mstEdges],

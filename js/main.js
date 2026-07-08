@@ -3,11 +3,11 @@
  *
  * Создаёт модель графа, визуализатор и контроллер интерфейса, связывая их
  * вместе. Вся логика разбита по модулям:
- *  - core/Graph.js           — модель графа;
- *  - structures/*            — приоритетная очередь и DSU;
- *  - algorithms/*            — BFS, DFS, Дейкстра, Прим, Краскал;
- *  - visualization/Visualizer.js — отрисовка SVG;
- *  - ui/UIController.js      — обработка действий пользователя.
+ *  - core/Graph.js           - модель графа;
+ *  - structures/*            - приоритетная очередь и DSU;
+ *  - algorithms/*            - BFS, DFS, Дейкстра, Прим, Краскал;
+ *  - visualization/Visualizer.js - отрисовка SVG;
+ *  - ui/UIController.js      - обработка действий пользователя.
  */
 
 import { Graph } from './core/Graph.js';

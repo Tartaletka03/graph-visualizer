@@ -45,7 +45,7 @@ describe('Алгоритм Дейкстры', () => {
     const g = buildCanonicalGraph();
     const steps = dijkstra(g, idByLabel(g, 'A'));
     const last = steps[steps.length - 1];
-    // Предок F — E, предок E — D, предок D — B, предок B — C, предок C — A.
+    // Предок F - E, предок E - D, предок D - B, предок B - C, предок C - A.
     expect(last.prev.F).toBe('E');
     expect(last.prev.E).toBe('D');
     expect(last.prev.D).toBe('B');

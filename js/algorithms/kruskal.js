@@ -1,13 +1,13 @@
 /**
- * Алгоритм Краскала — построение минимального остовного дерева (MST).
+ * Алгоритм Краскала - построение минимального остовного дерева (MST).
  *
  * Сортирует все рёбра по возрастанию веса и последовательно добавляет
  * ребро в остов, если оно не образует цикла с уже выбранными рёбрами.
  * Проверка цикла выполняется через систему непересекающихся множеств (DSU):
  * если find(a) === find(b), вершины уже в одной компоненте и ребро образует
- * цикл — его пропускают.
+ * цикл - его пропускают.
  *
- * Сложность: O(E log E) — определяется сортировкой рёбер; операции DSU
+ * Сложность: O(E log E) - определяется сортировкой рёбер; операции DSU
  * с эвристиками практически константны.
  *
  * ВАЖНО о корректности DSU: проверка цикла выполняется по принадлежности
@@ -30,7 +30,7 @@ export function kruskal(graph) {
   const dsu = new DSU(vertices.length);
 
   // Сортировка рёбер по весу. Для детерминизма при равных весах используется
-  // вторичный ключ — id ребра (не влияет на корректность циклов, только на
+  // вторичный ключ - id ребра (не влияет на корректность циклов, только на
   // выбор MST при нескольких минимумах).
   const sorted = edges.slice().sort((a, b) => a.weight - b.weight || a.id - b.id);
 
@@ -39,7 +39,7 @@ export function kruskal(graph) {
 
   steps.push({
     type: 'init',
-    desc: `Сортировка ${edges.length} рёбер по возрастанию веса. Каждая вершина — отдельное множество.`,
+    desc: `Сортировка ${edges.length} рёбер по возрастанию веса. Каждая вершина - отдельное множество.`,
     current: null,
     mstEdges: [],
     totalWeight,
@@ -52,10 +52,10 @@ export function kruskal(graph) {
     const bi = index.get(e.to);
 
     if (dsu.sameSet(ai, bi)) {
-      // Ребро образует цикл — пропускаем.
+      // Ребро образует цикл - пропускаем.
       steps.push({
         type: 'skip',
-        desc: `Ребро ${graph.getVertex(e.from).label}–${graph.getVertex(e.to).label} (вес ${e.weight}) образует цикл — отклонено`,
+        desc: `Ребро ${graph.getVertex(e.from).label}-${graph.getVertex(e.to).label} (вес ${e.weight}) образует цикл - отклонено`,
         current: null,
         mstEdges: [...mstEdges],
         totalWeight,
@@ -71,7 +71,7 @@ export function kruskal(graph) {
 
     steps.push({
       type: 'add',
-      desc: `Добавляем ребро ${graph.getVertex(e.from).label}–${graph.getVertex(e.to).label} (вес ${e.weight}); суммарный вес = ${totalWeight}`,
+      desc: `Добавляем ребро ${graph.getVertex(e.from).label}-${graph.getVertex(e.to).label} (вес ${e.weight}); суммарный вес = ${totalWeight}`,
       current: null,
       mstEdges: [...mstEdges],
       totalWeight,

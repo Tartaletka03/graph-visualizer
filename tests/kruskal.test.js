@@ -46,7 +46,7 @@ describe('Алгоритм Краскала', () => {
     expect(skipSteps.length > 0).toBeTruthy();
   });
 
-  it('первый шаг — сортировка рёбер', () => {
+  it('первый шаг - сортировка рёбер', () => {
     const g = buildCanonicalGraph();
     const steps = kruskal(g);
     expect(steps[0].type).toBe('init');
@@ -70,7 +70,7 @@ describe('Алгоритм Краскала', () => {
 
   it('корректно обнаруживает цикл при рёбрах с равными весами', () => {
     // Треугольник с равными весами: A-B:1, B-C:1, A-C:1.
-    // MST должно содержать 2 ребра, третье — цикл.
+    // MST должно содержать 2 ребра, третье - цикл.
     const g = buildCanonicalGraph();
     g.clear();
     const a = g.addVertex();

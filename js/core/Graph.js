@@ -15,7 +15,7 @@ let edgeCounter = 0;
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 function labelFromId(id) {
-  // id — порядковый номер вершины (0, 1, 2, ...).
+  // id - порядковый номер вершины (0, 1, 2, ...).
   let n = id;
   let label = '';
   n += 1;
@@ -111,7 +111,7 @@ export class Graph {
   }
 
   /**
-   * Возвращает соседей вершины через карту смежности — O(степень вершины),
+   * Возвращает соседей вершины через карту смежности - O(степень вершины),
    * а не O(E), как при линейном поиске по массиву рёбер.
    * @returns {Array<{to:number,edgeId:number,weight:number}>}
    */

@@ -1,6 +1,6 @@
 /**
  * Тесты алгоритма обхода в ширину (BFS).
- * Входные данные — канонический граф 6 вершин; эталон — порядок обхода.
+ * Входные данные - канонический граф 6 вершин; эталон - порядок обхода.
  */
 
 import { describe, it, expect } from './runner.mjs';
@@ -16,14 +16,14 @@ describe('Алгоритм BFS', () => {
     expect(labels).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
   });
 
-  it('первый шаг — инициализация со стартовой вершиной в очереди', () => {
+  it('первый шаг - инициализация со стартовой вершиной в очереди', () => {
     const g = buildCanonicalGraph();
     const steps = bfs(g, idByLabel(g, 'A'));
     expect(steps[0].type).toBe('init');
     expect(steps[0].queue.length).toBe(1);
   });
 
-  it('последний шаг — завершение с описанием порядка', () => {
+  it('последний шаг - завершение с описанием порядка', () => {
     const g = buildCanonicalGraph();
     const steps = bfs(g, idByLabel(g, 'A'));
     const done = steps[steps.length - 1];
@@ -59,7 +59,7 @@ describe('Алгоритм BFS', () => {
     const g = buildCanonicalGraph();
     const steps = bfs(g, idByLabel(g, 'A'));
     // Шаг 1 (init): очередь [A].
-    // Шаг 2 (visit A): очередь [B, C] — соседи A.
+    // Шаг 2 (visit A): очередь [B, C] - соседи A.
     const afterA = steps[1];
     const queueLabels = afterA.queue.map((id) => g.getVertex(id).label).sort();
     expect(queueLabels).toEqual(['B', 'C']);
